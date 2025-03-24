@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "vercel dev",
-    "deploy": "vercel deploy --prod"
+    "deploy": "vercel deploy --prod",
+    "recovery": "start tools\\basic-mode.bat"
   },
   "dependencies": {
     "express": "^4.18.2",

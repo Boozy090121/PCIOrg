@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quality Re-Org Platform (Basic Mode)</title>
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    /* Basic styles that don't rely on external files */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #212529;
+    }
+    
+    .app-container {
+      display: flex;
+      height: 100vh;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
+      height: 100%;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .sidebar-header {
+      padding: 15px;
+      border-bottom: 1px solid #dee2e6;
+      background-color: #00518A;
+      color: white;
+    }
+    
+    .sidebar-header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    
+    .value-stream-selector {
+      padding: 15px;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .value-stream-selector label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    
+    select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ced4da;
+    }
+    
+    .nav-menu ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-menu li {
+      border-bottom: 1px solid #f2f2f2;
+    }
+    
+    .nav-menu a {
+      display: block;
+      padding: 12px 15px;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+    
+    .nav-menu a:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .nav-menu a.active {
+      background-color: #e9ecef;
+      font-weight: bold;
+    }
+    
+    .nav-menu i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .tab-content {
+      background-color: white;
+      border-radius: 5px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    h2 {
+      margin-top: 0;
+      color: #00518A;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .status-message {
+      padding: 15px;
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      margin-bottom: 15px;
+    }
+    
+    button {
+      background-color: #00518A;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #003c67;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar navigation -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>Quality Re-Org Hub</h1>
+      </div>
+      
+      <!-- Value stream selector -->
+      <div class="value-stream-selector">
+        <label for="stream-select">Value Stream:</label>
+        <select id="stream-select">
+          <option value="bbv">BBV - Bottles, Blisters, Vials</option>
+          <option value="add">ADD - Advanced Drug Delivery</option>
+          <option value="arb">ARB - Amgen, Regeneron Biologics</option>
+        </select>
+      </div>
+      
+      <!-- Navigation menu -->
+      <nav class="nav-menu">
+        <ul id="main-nav">
+          <li><a href="#dashboard" class="active" onclick="switchTab('dashboard'); return false;"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li><a href="#personnel" onclick="switchTab('personnel'); return false;"><i class="fas fa-users"></i> Personnel</a></li>
+          <li><a href="#clients" onclick="switchTab('clients'); return false;"><i class="fas fa-building"></i> Clients & Factories</a></li>
+          <li><a href="#teams" onclick="switchTab('teams'); return false;"><i class="fas fa-user-friends"></i> Team Builder</a></li>
+          <li><a href="#skills" onclick="switchTab('skills'); return false;"><i class="fas fa-chart-bar"></i> Skills Matrix</a></li>
+          <li><a href="#raci" onclick="switchTab('raci'); return false;"><i class="fas fa-tasks"></i> RACI Matrix</a></li>
+          <li><a href="#orgchart" onclick="switchTab('orgchart'); return false;"><i class="fas fa-sitemap"></i> Org Chart</a></li>
+          <li><a href="#planning" onclick="switchTab('planning'); return false;"><i class="fas fa-project-diagram"></i> Scenario Planning</a></li>
+          <li><a href="#shared" onclick="switchTab('shared'); return false;"><i class="fas fa-handshake"></i> Shared Resources</a></li>
+          <li><a href="#reports" onclick="switchTab('reports'); return false;"><i class="fas fa-file-alt"></i> Reports</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+      <div id="tab-content" class="tab-content">
+        <!-- Default dashboard tab content -->
+        <div id="dashboard-content">
+          <div class="status-message">
+            <strong>Recovery Mode Active:</strong> The application is running in basic mode due to module loading issues.
+          </div>
+          
+          <h2>Dashboard</h2>
+          <p>Welcome to the Quality Re-Org & Capability Management Platform.</p>
+          <p>This simplified interface is currently active to ensure you can access basic functionality while we resolve loading issues with the full application.</p>
+          
+          <h3>Available Features:</h3>
+          <ul>
+            <li>Basic navigation between tabs</li>
+            <li>Value stream selection</li>
+            <li>Simple UI for critical functions</li>
+          </ul>
+          
+          <h3>Platform Status:</h3>
+          <ul>
+            <li><strong>Operating Mode:</strong> Basic Recovery</li>
+            <li><strong>Data Storage:</strong> Local Only</li>
+            <li><strong>Firebase Connection:</strong> Not Available</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple tab switching function
+    function switchTab(tabId) {
+      // Update active status in navigation
+      document.querySelectorAll('#main-nav a').forEach(link => {
+        link.classList.remove('active');
+      });
+      
+      // Set new active tab
+      const activeLink = document.querySelector(`#main-nav a[href="#${tabId}"]`);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+      
+      // Update tab content
+      const tabContent = document.getElementById('tab-content');
+      
+      // Generate content based on tab
+      let content = '';
+      
+      switch (tabId) {
+        case 'dashboard':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> The application is running in basic mode due to module loading issues.
+            </div>
+            
+            <h2>Dashboard</h2>
+            <p>Welcome to the Quality Re-Org & Capability Management Platform.</p>
+            <p>This simplified interface is currently active to ensure you can access basic functionality while we resolve loading issues with the full application.</p>
+            
+            <h3>Available Features:</h3>
+            <ul>
+              <li>Basic navigation between tabs</li>
+              <li>Value stream selection</li>
+              <li>Simple UI for critical functions</li>
+            </ul>
+            
+            <h3>Platform Status:</h3>
+            <ul>
+              <li><strong>Operating Mode:</strong> Basic Recovery</li>
+              <li><strong>Data Storage:</strong> Local Only</li>
+              <li><strong>Firebase Connection:</strong> Not Available</li>
+            </ul>
+          `;
+          break;
+          
+        case 'personnel':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> Personnel module is in basic mode.
+            </div>
+            
+            <h2>Personnel Management</h2>
+            <p>This module allows you to manage personnel across the organization.</p>
+            <p>Features include adding, editing and assigning personnel to teams and focus factories.</p>
+            
+            <div style="margin-top: 20px;">
+              <button>Add Personnel</button>
+              <button style="margin-left: 10px; background-color: #6c757d;">Import</button>
+              <button style="margin-left: 10px; background-color: #28a745;">Export</button>
+            </div>
+          `;
+          break;
+          
+        case 'teams':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> Team Builder module is in basic mode.
+            </div>
+            
+            <h2>Team Builder</h2>
+            <p>Create and manage teams within the organization.</p>
+            <p>Assign personnel to teams based on roles and skills.</p>
+            
+            <div style="margin-top: 20px;">
+              <button>Create Team</button>
+              <button style="margin-left: 10px; background-color: #6c757d;">View Teams</button>
+            </div>
+          `;
+          break;
+          
+        case 'skills':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> Skills Matrix module is in basic mode.
+            </div>
+            
+            <h2>Skills Matrix</h2>
+            <p>Track skill proficiency across the organization.</p>
+            <p>Identify training needs and areas for development.</p>
+            
+            <div style="margin-top: 20px;">
+              <button>Add Skill</button>
+              <button style="margin-left: 10px; background-color: #6c757d;">Rate Skills</button>
+            </div>
+          `;
+          break;
+          
+        case 'raci':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> RACI Matrix module is in basic mode.
+            </div>
+            
+            <h2>RACI Matrix</h2>
+            <p>Define responsibilities for processes and activities.</p>
+            <p>Ensure clear ownership with Responsible, Accountable, Consulted, and Informed assignments.</p>
+            
+            <div style="margin-top: 20px;">
+              <button>Create RACI</button>
+              <button style="margin-left: 10px; background-color: #6c757d;">View Processes</button>
+            </div>
+          `;
+          break;
+          
+        case 'orgchart':
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> Org Chart module is in basic mode.
+            </div>
+            
+            <h2>Organization Chart</h2>
+            <p>Visual representation of the organizational structure.</p>
+            <p>View reporting relationships and team hierarchies.</p>
+            
+            <div style="margin-top: 20px;">
+              <button>View By Team</button>
+              <button style="margin-left: 10px; background-color: #6c757d;">View By Function</button>
+            </div>
+          `;
+          break;
+          
+        default:
+          content = `
+            <div class="status-message">
+              <strong>Recovery Mode Active:</strong> Module is in basic mode.
+            </div>
+            
+            <h2>${tabId.charAt(0).toUpperCase() + tabId.slice(1)}</h2>
+            <p>This module is currently in recovery mode.</p>
+            <p>Basic functionality is available while we resolve loading issues.</p>
+          `;
+      }
+      
+      tabContent.innerHTML = content;
+    }
+    
+    // Handle value stream selection
+    document.getElementById('stream-select').addEventListener('change', function() {
+      const selectedStream = this.value;
+      let primaryColor;
+      
+      switch (selectedStream) {
+        case 'bbv':
+          primaryColor = '#00518A';
+          break;
+        case 'add':
+          primaryColor = '#CC2030';
+          break;
+        case 'arb':
+          primaryColor = '#4F46E5';
+          break;
+        default:
+          primaryColor = '#00518A';
+      }
+      
+      // Update header color
+      document.querySelector('.sidebar-header').style.backgroundColor = primaryColor;
+      
+      // Update headings
+      document.querySelectorAll('h2').forEach(heading => {
+        heading.style.color = primaryColor;
+      });
+      
+      // Update buttons
+      document.querySelectorAll('button').forEach(button => {
+        if (button.style.backgroundColor === '' || 
+            button.style.backgroundColor === 'rgb(0, 81, 138)' || 
+            button.style.backgroundColor === '#00518A') {
+          button.style.backgroundColor = primaryColor;
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

@@ -28,8 +28,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files
-app.use(express.static(__dirname));
+// Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Import Firebase routes
 const firebaseRoutes = require('./firebase-init');
@@ -89,7 +89,7 @@ app.get('/api/config', (req, res) => {
 
 // Serve index.html for all other routes (client-side routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware

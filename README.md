@@ -1,329 +1,129 @@
 # Quality Re-Org & Capability Management Platform
 
-A comprehensive platform for managing quality organization across three focus factories: BBV (Bottles, Blisters, Vials), ADD (Advanced Drug Delivery), and ARB (Amgen, Regeneron Biologics).
+A comprehensive platform for managing quality organization resources, capabilities, and personnel across different value streams.
 
-## Overview
+## Project Structure
 
-This platform enables scenario planning, team structuring, skills tracking, RACI mapping, and shared resource visibility with persistent, centralized data storage using Firebase.
-
-### Core Features
-
-- **Personnel Management**: Central creation and management of all people
-- **Client & Focus Factory Library**: Manage clients and their factory assignments
-- **Org Chart Viewer**: Visual, filterable org chart view
-- **Scenario Planning**: Build and validate future org structures
-- **Team Builder**: Create and manage teams across focus factories
-- **Skills Matrix**: Define, track, and analyze skills across the organization
-- **RACI Matrix**: Define processes and assign responsibilities
-- **Shared Resource Management**: Allocate and track shared resources across factories
-- **Dashboards & Reports**: Live dashboards and exportable reports
-- **Maintenance Portal**: Track organizational changes over time
-
-## Technology Stack
-
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Backend**: Node.js, Express
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Authentication
-- **Hosting**: Vercel
+```
+quality-org-hub/
+├── public/                # Static files served by the web server
+│   ├── index.html         # Main application HTML
+│   ├── index-fixed.html   # Fixed version of the main application
+│   ├── css/               # CSS stylesheets
+│   ├── js/                # JavaScript files
+│   │   ├── main.js        # Main application script
+│   │   ├── core/          # Core modules (config, data, etc.)
+│   │   ├── modules/       # Feature modules (UI, RACI, org chart, etc.)
+│   │   └── utils/         # Utility functions
+│   └── recovery/          # Recovery and diagnostic tools
+│       ├── auto-fix.html  # Automatic repair tool
+│       ├── basic.html     # Basic mode with minimal dependencies
+│       ├── diagnose.html  # Diagnostic tool for troubleshooting
+│       └── scripts/       # Recovery scripts
+│           ├── diagnose.js        # Diagnostic script
+│           ├── fixed-modules.js   # Module fixing script
+│           └── fix-case.js        # Case sensitivity fixing script
+├── server.js              # Express server for serving the application
+├── firebase-init.js       # Firebase initialization and routes
+├── package.json           # Node.js dependencies and scripts
+├── tools/                 # Launcher and utility scripts
+│   ├── startup.bat        # Main application launcher
+│   ├── basic-mode.bat     # Recovery mode launcher
+│   └── start-fixed.bat    # Fixed version launcher
+├── start.bat              # Simple starter script
+└── vercel.json            # Vercel deployment configuration
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 16+ and npm
-- A Firebase account (for cloud database)
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
 ### Installation
 
 1. Clone the repository
-```bash
-git clone https://github.com/your-org/quality-org-hub.git
-cd quality-org-hub
-```
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-2. Install dependencies
-```bash
-npm install
-```
+### Running the Application
 
-3. Set up Firebase
-   - Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-   - Add a web app to your Firebase project
-   - Copy the Firebase configuration to `js/core/firebaseConfig.js`
-   - Enable Firestore Database and Authentication in the Firebase console
+There are several ways to run the application:
 
-4. Start the development server
-```bash
-npm run dev
-```
+1. **Normal Start**:
+   ```
+   npm start
+   ```
+   or
+   ```
+   node server.js
+   ```
 
-## Project Structure
+2. **Development Mode** (with hot reload):
+   ```
+   npm run dev
+   ```
 
-```
-├── js/
-│   ├── core/                 # Core application code
-│   │   ├── app.js           # Main application logic
-│   │   ├── config.js        # Application configuration
-│   │   ├── data.js          # Data management (localStorage fallback)
-│   │   ├── dataService.js   # Data service layer
-│   │   ├── firebaseConfig.js # Firebase configuration
-│   │   └── firebaseDataService.js # Firebase data service
-│   ├── modules/              # Feature modules
-│   │   ├── personnel.js     # Personnel management
-│   │   ├── teamBuilder.js   # Team building functionality
-│   │   ├── skillsmatrix.js  # Skills matrix functionality
-│   │   ├── racimatrix.js    # RACI matrix functionality
-│   │   ├── clientFactory.js # Client and factory management
-│   │   ├── sharedResources.js # Shared resource management
-│   │   ├── planning.js      # Scenario planning
-│   │   └── orgchart.js      # Org chart visualization
-│   └── utils/                # Utility functions
-├── src/
-│   ├── css/                  # Stylesheets
-│   └── assets/               # Static assets
-├── index.html                # Main HTML file
-├── server.js                 # Express server
-├── firebase-init.js          # Firebase server initialization
-└── package.json              # Project dependencies
-```
+3. **Recovery Mode** (if you encounter issues):
+   ```
+   npm run recovery
+   ```
+   or
+   ```
+   start.bat
+   ```
+   and select recovery mode
 
-## Data Model
+### Recovery Tools
 
-### Personnel
-```json
-{
-  "id": "string",
-  "name": "string",
-  "title": "string",
-  "role": "string",
-  "valueStream": "string", // 'bbv', 'add', 'arb', or 'shared'
-  "department": "string",
-  "manager": "string", // ID of manager
-  "email": "string",
-  "fteStatus": "string"
-}
-```
+If you encounter issues with the application, several recovery tools are available:
 
-### Teams
-```json
-{
-  "id": "string",
-  "name": "string",
-  "purpose": "string",
-  "stream": "string", // 'bbv', 'add', 'arb'
-  "function": "string",
-  "members": ["string"], // Array of personnel IDs
-  "lead": "string" // ID of team lead
-}
-```
+1. **Diagnostic Tool**: Analyzes module loading issues and provides recommendations
+2. **Auto-Fix Tool**: Automatically repairs common module issues
+3. **Basic Mode**: Runs the application with minimal dependencies
+4. **Fixed Version**: Pre-fixed version of the application
 
-### Clients
-```json
-{
-  "id": "string",
-  "name": "string",
-  "stream": "string", // 'bbv', 'add', 'arb'
-  "facilities": ["string"],
-  "rooms": ["string"],
-  "lines": ["string"]
-}
-```
+Access these tools via:
+- `npm run recovery`
+- `tools/basic-mode.bat`
+- `http://localhost:3000/recovery/diagnose.html`
 
-### Skills
-```json
-{
-  "id": "string",
-  "name": "string",
-  "description": "string",
-  "category": "string",
-  "targetRatingByRole": {
-    "roleType": "number" // 1-5 rating
-  }
-}
-```
+## Features
 
-### Processes (RACI)
-```json
-{
-  "id": "string",
-  "name": "string",
-  "description": "string",
-  "category": "string",
-  "stream": "string" // 'bbv', 'add', 'arb' or 'all'
-}
-```
+- **Personnel Management**: Track personnel across value streams
+- **Team Builder**: Create and manage teams
+- **Skills Matrix**: Track capabilities and skills
+- **RACI Matrix**: Define responsibilities for processes and activities
+- **Organization Chart**: Visualize organizational structure
+- **Scenario Planning**: Plan for different organizational scenarios
+- **Shared Resources**: Manage shared resources across value streams
 
-### RACI Assignments
-```json
-{
-  "id": "string",
-  "processId": "string",
-  "personnelId": "string",
-  "role": "string", // 'R', 'A', 'C', or 'I'
-  "stream": "string"
-}
-```
+## Value Streams
 
-### Resource Allocations
-```json
-{
-  "id": "string",
-  "personnelId": "string",
-  "stream": "string",
-  "percentage": "number", // 0-100
-  "role": "string"
-}
-```
-
-### Scenarios
-```json
-{
-  "id": "string",
-  "name": "string",
-  "description": "string",
-  "stream": "string",
-  "isActive": "boolean",
-  "assignments": [
-    {
-      "personnelId": "string",
-      "role": "string",
-      "function": "string"
-    }
-  ]
-}
-```
+The platform supports multiple value streams:
+- BBV - Bottles, Blisters, Vials
+- ADD - Advanced Drug Delivery
+- ARB - Amgen, Regeneron Biologics
 
 ## Deployment
 
-The application is set up for deployment to Vercel:
-
-```bash
+To deploy to Vercel:
+```
 npm run deploy
 ```
 
-## Firebase Setup Instructions
-
-To set up Firebase for this application, follow these detailed steps:
-
-### 1. Create a Firebase Project
-
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Click "Add project" and follow the prompts
-3. Give your project a name (e.g., "quality-org-hub")
-4. Choose whether to enable Google Analytics (recommended)
-5. Accept the terms and click "Create Project"
-
-### 2. Set Up Firestore Database
-
-1. In the Firebase console, navigate to "Firestore Database" in the left sidebar
-2. Click "Create database"
-3. Choose "Start in production mode" and click "Next"
-4. Select a location for your database that's closest to your users
-5. Click "Enable" to create the database
-
-### 3. Configure Security Rules
-
-1. In the Firestore Database section, go to the "Rules" tab
-2. For development, you can use these permissive rules (do not use in production without authentication):
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-3. For production, update with proper authentication rules:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 4. Create a Web App
-
-1. In the Firebase console, click on the gear icon ⚙️ next to "Project Overview" and select "Project settings"
-2. Scroll down to "Your apps" and click the web icon (</>) to add a web app
-3. Register your app with a nickname (e.g., "quality-org-hub-web")
-4. Optionally enable Firebase Hosting if you plan to host with Firebase
-5. Click "Register app"
-
-### 5. Get Configuration Details
-
-After registering your app, you'll see the Firebase configuration. It looks like this:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
-};
-```
-
-### 6. Update Configuration in the Application
-
-1. Copy the Firebase configuration object
-2. Open `js/core/firebaseConfig.js` in your editor
-3. Replace the placeholder configuration with your actual Firebase configuration
-4. Save the file
-
-### 7. Set Up Authentication (Optional but Recommended)
-
-1. In the Firebase console, navigate to "Authentication" in the left sidebar
-2. Click "Get started"
-3. Enable the "Anonymous" sign-in method for basic functionality
-4. For better security, also enable email/password or Google sign-in methods
-
-### 8. Server-Side Firebase Setup (for API endpoints)
-
-If you're using the server-side Firebase functionality:
-
-1. In the Firebase console, go to Project Settings > Service accounts
-2. Click "Generate new private key" 
-3. Save the JSON file as `serviceAccountKey.json` in the root of your project
-4. Ensure this file is in your .gitignore (already configured)
-5. For deployment environments, set the environment variables instead of using the JSON file
-
-### 9. Testing the Firebase Connection
-
-1. Start the application with `npm start` or run `start.bat`
-2. Once loaded, check the Firebase status indicator in the top right of the sidebar
-3. It should show "Firebase Connected" in green
-4. If it shows "Using Local Storage" in red, check your configuration and console for errors
-
-### Troubleshooting
+## Troubleshooting
 
 If you encounter issues:
 
-1. Check browser console for any Firebase-related errors
-2. Verify your API key and project configuration
-3. Ensure your Firestore database has been created
-4. Check that security rules are properly configured
-5. Verify your internet connection
-6. Try the "Sync to Cloud" button in any data module to manually initiate a connection
-
-## Development Guidelines
-
-- All data operations should use the dataService which will automatically handle Firebase or localStorage persistence
-- Keep UI modules separate from data logic
-- Follow the established code style and patterns
-- Test thoroughly before deployment
+1. Try running in recovery mode: `npm run recovery`
+2. Use the diagnostic tool to identify problems
+3. Apply recommended fixes or use the auto-fix tool
+4. If issues persist, try the basic mode which has minimal dependencies
 
 ## License
 
-Copyright (c) 2023 Quality Organization - All Rights Reserved 
+This project is licensed under the terms of the license included in the repository. 
