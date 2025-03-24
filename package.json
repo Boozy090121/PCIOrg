@@ -8,7 +8,11 @@
     "dev": "vercel dev",
     "deploy": "vercel deploy --prod",
     "recovery": "start tools\\basic-mode.bat",
-    "build": "node build.js"
+    "build": "node build.js",
+    "vercel-build": "node build.js"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "dependencies": {
     "express": "^4.18.2",

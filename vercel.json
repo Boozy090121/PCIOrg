@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
+      "src": "simple-server.js",
       "use": "@vercel/node"
     },
     {
@@ -12,37 +12,15 @@
   ],
   "routes": [
     {
-      "src": "/js/(.*)",
-      "dest": "/public/js/$1",
-      "headers": {
-        "Content-Type": "application/javascript",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
-    },
-    {
-      "src": "/css/(.*)",
-      "dest": "/public/css/$1",
-      "headers": {
-        "Content-Type": "text/css"
-      }
-    },
-    {
-      "src": "/recovery/(.*)",
-      "dest": "/public/recovery/$1"
-    },
-    {
-      "src": "/index-fixed.html",
-      "dest": "/public/index-fixed.html"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "/server.js"
+      "dest": "/simple-server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/simple-server.js"
     }
-  ]
+  ],
+  "github": {
+    "silent": true
+  }
 } 
