@@ -3,7 +3,7 @@ const path = require('path');
 const app = express();
 
 // Serve static files from the root directory
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
 
 // Serve index.html for all routes
 app.get('*', (req, res) => {
