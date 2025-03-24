@@ -9,7 +9,9 @@
     "deploy": "vercel deploy --prod"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "firebase": "^10.8.0",
+    "firebase-admin": "^12.0.0"
   },
   "devDependencies": {
     "vercel": "^33.5.1"
