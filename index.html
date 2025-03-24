@@ -64,25 +64,7 @@
   </div>
 
   <!-- Main application script -->
-  <script type="module">
-    import app from './js/main.js';
-    
-    // Add error handling for module loading
-    window.addEventListener('error', (event) => {
-      if (event.filename && event.filename.includes('main.js')) {
-        console.error('Failed to load application:', event.error);
-        const loader = document.getElementById('initialLoader');
-        if (loader) {
-          loader.innerHTML = `
-            <div class="error-message">
-              <i class="fas fa-exclamation-circle"></i>
-              <p>Failed to load application. Please refresh the page.</p>
-            </div>
-          `;
-        }
-      }
-    });
-  </script>
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>
 

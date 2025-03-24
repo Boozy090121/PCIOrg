@@ -17,7 +17,10 @@
   "routes": [
     {
       "src": "/js/(.*)",
-      "dest": "/js/$1"
+      "dest": "/js/$1",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
     },
     {
       "src": "/styles.css",
