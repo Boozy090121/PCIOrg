@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Variables Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .status {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .success {
+      color: #198754;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Global Variables Test</h1>
+  <p>This page tests if global variables from separate JS files are accessible.</p>
+  
+  <div class="status" id="status">Testing global variables...</div>
+  
+  <h2>Global Objects</h2>
+  <pre id="globals"></pre>
+  
+  <h2>UI Object Methods</h2>
+  <pre id="ui-methods"></pre>
+  
+  <h2>App Data Properties</h2>
+  <pre id="app-properties"></pre>
+  
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="ui.js"></script>
+  <script>
+    // Function to show object properties
+    function inspectObject(obj, maxDepth = 1) {
+      if (!obj) return 'undefined or null';
+      
+      function getObjectInfo(object, depth = 0) {
+        if (depth > maxDepth) return '...';
+        
+        const properties = {};
+        for (const key in object) {
+          if (object.hasOwnProperty(key)) {
+            const value = object[key];
+            if (typeof value === 'function') {
+              properties[key] = 'function()';
+            } else if (typeof value === 'object' && value !== null) {
+              properties[key] = depth < maxDepth ? getObjectInfo(value, depth + 1) : '...';
+            } else {
+              properties[key] = value;
+            }
+          }
+        }
+        return properties;
+      }
+      
+      return JSON.stringify(getObjectInfo(obj), null, 2);
+    }
+    
+    // Update DOM with test results
+    document.addEventListener('DOMContentLoaded', () => {
+      const statusEl = document.getElementById('status');
+      const globalsEl = document.getElementById('globals');
+      const uiMethodsEl = document.getElementById('ui-methods');
+      const appPropertiesEl = document.getElementById('app-properties');
+      
+      // Check global objects
+      const configExists = typeof config !== 'undefined';
+      const appDataExists = typeof appData !== 'undefined';
+      const uiExists = typeof ui !== 'undefined';
+      
+      if (configExists && appDataExists && uiExists) {
+        statusEl.innerHTML = '<span class="success">✓ All global variables are accessible!</span>';
+      } else {
+        statusEl.innerHTML = '<span class="error">❌ Some global variables are missing!</span>';
+      }
+      
+      // Show global objects
+      globalsEl.textContent = `config: ${configExists ? 'Exists' : 'MISSING'}\n`;
+      globalsEl.textContent += `appData: ${appDataExists ? 'Exists' : 'MISSING'}\n`;
+      globalsEl.textContent += `ui: ${uiExists ? 'Exists' : 'MISSING'}\n`;
+      
+      // Show UI methods
+      if (uiExists) {
+        const uiMethods = [];
+        for (const key in ui) {
+          if (typeof ui[key] === 'function') {
+            uiMethods.push(key);
+          }
+        }
+        uiMethodsEl.textContent = uiMethods.join('\n');
+      } else {
+        uiMethodsEl.textContent = 'UI object is not accessible';
+      }
+      
+      // Show appData properties
+      if (appDataExists) {
+        appPropertiesEl.textContent = inspectObject(appData);
+      } else {
+        appPropertiesEl.textContent = 'appData object is not accessible';
+      }
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,160 @@
+/* 
+ * Enhanced Team Styles
+ * Additional styles to improve team card interactions
+ */
+
+/* Make team cards more obviously clickable */
+.team-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.team-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-color: #e2e8f0;
+}
+
+.team-card:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+/* Make view buttons more obvious */
+.view-team-btn,
+[data-action="view"] {
+  color: #fff;
+  background-color: #3b82f6;
+  transition: all 0.2s ease;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.view-team-btn:hover,
+[data-action="view"]:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Sub-team card styling */
+.subteam-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.subteam-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.sub-teams-section {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.sub-teams-section::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+}
+
+/* Ensure all buttons within team cards are clickable */
+.team-card button {
+  position: relative;
+  z-index: 5;
+}
+
+/* Action buttons */
+[data-action="edit"],
+[data-action="delete"],
+.edit-team-btn,
+.delete-team-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+[data-action="edit"]:hover,
+.edit-team-btn:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+[data-action="delete"]:hover,
+.delete-team-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Improve modal team details */
+.modal-content .team-card,
+.modal-content .subteam-card {
+  margin-bottom: 1rem;
+}
+
+/* Stream colors for team elements */
+.bg-bbv-600 { background-color: #00518A; }
+.bg-add-600 { background-color: #CC2030; }
+.bg-arb-600 { background-color: #4F46E5; }
+.bg-shared-600 { background-color: #374151; }
+
+/* Add visual indicator for clickable items */
+.team-card::before,
+.subteam-card::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid #9ca3af;
+  border-right: 2px solid #9ca3af;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.team-card:hover::before,
+.subteam-card:hover::before {
+  opacity: 1;
+}
+
+/* Fix for Safari and Firefox */
+@supports (-moz-appearance:none) {
+  .team-card, .subteam-card {
+    will-change: transform;
+  }
+}
+
+@supports (-webkit-appearance:none) {
+  .team-card:hover, .subteam-card:hover {
+    z-index: 1;
+  }
+} 
