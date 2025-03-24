@@ -10,6 +10,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Set correct MIME types
+app.use((req, res, next) => {
+  if (req.path.endsWith('.js')) {
+    res.type('application/javascript');
+  }
+  next();
+});
+
 // Serve static files from the root directory
 app.use(express.static(path.join(__dirname)));
 
