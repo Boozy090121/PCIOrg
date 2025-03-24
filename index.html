@@ -27,6 +27,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   
+  <!-- Module Fix Script - Loads before main.js to catch and fix module loading issues -->
+  <script src="fix-modules.js"></script>
+  
   <!-- Base styles for fallback and recovery screens -->
   <style>
     /* Root CSS variables for theming */
@@ -573,6 +576,19 @@
       background-color: #fff3cd;
       color: #856404;
       display: block;
+    }
+
+    /* Module repair message styles */
+    .module-repair-message {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #ffc107;
+    }
+    .module-repair-message h3 {
+      margin-top: 0;
+      color: #856404;
     }
   </style>
   
