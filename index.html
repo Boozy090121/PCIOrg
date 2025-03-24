@@ -48,7 +48,7 @@
       </div>
 
       <!-- Navigation tabs -->
-      <div id="nav-tabs" class="nav-tabs"></div>
+      <div class="sidebar-nav"></div>
     </nav>
 
     <!-- Main content area -->
@@ -59,7 +59,7 @@
       </header>
 
       <!-- Tab content -->
-      <div id="tab-content" class="tab-content"></div>
+      <div id="tabContent" class="tab-content"></div>
     </main>
   </div>
 
@@ -67,11 +67,20 @@
   <script type="module">
     import app from './js/main.js';
     
-    // Remove loading screen when app is ready
-    window.addEventListener('load', () => {
-      app.init().then(() => {
-        document.querySelector('.initial-loader').style.display = 'none';
-      });
+    // Add error handling for module loading
+    window.addEventListener('error', (event) => {
+      if (event.filename && event.filename.includes('main.js')) {
+        console.error('Failed to load application:', event.error);
+        const loader = document.getElementById('initialLoader');
+        if (loader) {
+          loader.innerHTML = `
+            <div class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>Failed to load application. Please refresh the page.</p>
+            </div>
+          `;
+        }
+      }
     });
   </script>
 </body>
