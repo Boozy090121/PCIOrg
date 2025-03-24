@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -28,12 +29,45 @@ app.use((req, res, next) => {
   next();
 });
 
+// Custom middleware to verify files exist before serving
+const validateStaticFilesExist = (req, res, next) => {
+  const filePath = path.join(__dirname, 'public', req.path);
+  
+  // Skip API routes and other non-file requests
+  if (req.path.startsWith('/api') || req.path === '/') {
+    return next();
+  }
+  
+  // Check if file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.warn(`File not found: ${filePath}`);
+      // Continue to next middleware (will fall through to the catch-all route)
+      return next();
+    }
+    // File exists, continue
+    next();
+  });
+};
+
 // Serve static files from 'public' directory
+app.use(validateStaticFilesExist);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Import Firebase routes
-const firebaseRoutes = require('./firebase-init');
-app.use(firebaseRoutes);
+try {
+  const firebaseRoutes = require('./firebase-init');
+  app.use(firebaseRoutes);
+} catch (error) {
+  console.error('Error loading Firebase routes:', error);
+  // Provide an empty router if Firebase fails to load
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/firebase')) {
+      return res.status(500).json({ error: 'Firebase not available', message: error.message });
+    }
+    next();
+  });
+}
 
 // Define routes for legacy API endpoints (will be migrated to Firebase)
 app.get('/api/teams', (req, res) => {
@@ -89,7 +123,38 @@ app.get('/api/config', (req, res) => {
 
 // Serve index.html for all other routes (client-side routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  
+  // Safely check if the file exists before sending
+  fs.access(indexPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // If index.html doesn't exist, try to serve the recovery page
+      const recoveryPath = path.join(__dirname, 'public', 'recovery', 'basic.html');
+      
+      fs.access(recoveryPath, fs.constants.F_OK, (recoveryErr) => {
+        if (recoveryErr) {
+          // Neither index.html nor recovery page exists
+          return res.status(500).send(`
+            <html>
+              <head><title>Server Error</title></head>
+              <body>
+                <h1>Server Error</h1>
+                <p>Could not find the main application files. Please check your deployment.</p>
+                <p>Error: ${err.message}</p>
+              </body>
+            </html>
+          `);
+        }
+        
+        // Serve recovery page
+        res.sendFile(recoveryPath);
+      });
+      return;
+    }
+    
+    // Serve the main index.html file
+    res.sendFile(indexPath);
+  });
 });
 
 // Error handling middleware
