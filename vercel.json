@@ -19,7 +19,8 @@
       "src": "/js/(.*)",
       "dest": "/js/$1",
       "headers": {
-        "Content-Type": "application/javascript"
+        "Content-Type": "application/javascript",
+        "Access-Control-Allow-Origin": "*"
       }
     },
     {
