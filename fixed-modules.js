@@ -110,6 +110,11 @@ const configFallback = {
     console.log('Fallback config.init() called');
     return Promise.resolve();
   },
+  
+  appName: 'Quality Re-Org Hub',
+  version: '1.0.0',
+  defaultValueStream: 'bbv',
+  
   settings: {
     app: {
       name: 'Quality Re-Org & Capability Management Platform',
@@ -124,9 +129,67 @@ const configFallback = {
       localStorage: true
     }
   },
+  
+  colors: {
+    bbv: '#00518A',
+    add: '#CC2030',
+    arb: '#4F46E5',
+    shared: '#232323'
+  },
+  
+  valueStreams: {
+    bbv: {
+      name: 'BBV',
+      color: '#00518A',
+      fullName: 'BBV Quality'
+    },
+    add: {
+      name: 'ADD',
+      color: '#CC2030',
+      fullName: 'ADD Quality'
+    },
+    arb: {
+      name: 'ARB',
+      color: '#4F46E5',
+      fullName: 'ARB Quality'
+    }
+  },
+  
+  tabs: [
+    { id: 'dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt' },
+    { id: 'personnel', label: 'Personnel', icon: 'fa-users' },
+    { id: 'teams', label: 'Team Builder', icon: 'fa-user-friends' },
+    { id: 'racimatrix', label: 'RACI Matrix', icon: 'fa-table' },
+    { id: 'skillsmatrix', label: 'Skills Matrix', icon: 'fa-chart-bar' },
+    { id: 'skilltree', label: 'Skill Tree', icon: 'fa-project-diagram' }
+  ],
+  
+  api: {
+    base: '/api',
+    teams: '/api/teams',
+    personnel: '/api/personnel'
+  },
+  
   getConfig: function(key) {
-    // Simple nested property getter
+    if (!key) return this.settings;
     return key.split('.').reduce((o, i) => o ? o[i] : undefined, this.settings);
+  },
+  
+  setConfig: function(path, value) {
+    if (!path) return;
+    
+    const parts = path.split('.');
+    let current = this.settings;
+    
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]]) {
+        current[parts[i]] = {};
+      }
+      current = current[parts[i]];
+    }
+    
+    current[parts[parts.length - 1]] = value;
+    return value;
   }
 };
 
@@ -262,38 +325,94 @@ window.ui = uiWrapper();
 window.orgChart = orgChartWrapper();
 window.raciMatrix = raciMatrixWrapper();
 
-// Create a fixed HTML file that uses the wrapper modules
+// Create a fixed copy of index.html with script module fixes
 function createFixedIndexHtml() {
-  // Create the HTML content by copying basic.html
-  fetch('basic.html')
+  fetch('index.html')
     .then(response => response.text())
-    .then(htmlContent => {
-      // Modify the HTML to include our fixed modules script
-      const modifiedHtml = htmlContent.replace(
-        '</head>',
-        '<script src="fixed-modules.js"></script>\n</head>'
-      );
+    .then(html => {
+      // Add module wrapper fixes
+      const fixedHtml = html
+        .replace('</head>', `
+          <script>
+            // Module fixers for Quality Re-Org Platform
+            window.moduleFixers = {
+              applyFixes: function() {
+                console.log('Applying module fixes...');
+                
+                // Create fallbacks and wrappers for critical modules
+                const modules = ['config', 'ui', 'dataService', 'orgChart', 'raciMatrix', 'skillTree'];
+                
+                modules.forEach(moduleName => {
+                  if (!window[moduleName]) {
+                    console.log(\`Creating fallback for \${moduleName}\`);
+                    window[moduleName] = { 
+                      init: function() { 
+                        console.log(\`\${moduleName} fallback initialized\`);
+                        return Promise.resolve(); 
+                      }
+                    };
+                  }
+                });
+                
+                console.log('All module fixes applied');
+              }
+            };
+            
+            // Automatically apply fixes when DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', function() {
+              window.moduleFixers.applyFixes();
+            });
+          </script>
+        </head>`)
+        .replace('</body>', `
+          <script>
+            // Ensure the platform continues to load even if there are module issues
+            window.addEventListener('error', function(event) {
+              console.error('Error caught by fixed modules script:', event.message);
+              if (event.message.includes('is not defined') || event.message.includes('is not a function')) {
+                console.log('Applying emergency module fixes...');
+                if (window.moduleFixers && typeof window.moduleFixers.applyFixes === 'function') {
+                  window.moduleFixers.applyFixes();
+                }
+              }
+            });
+          </script>
+        </body>`);
       
-      // Create a Blob with the modified HTML
-      const blob = new Blob([modifiedHtml], { type: 'text/html' });
+      // Create a blob with the fixed HTML
+      const blob = new Blob([fixedHtml], { type: 'text/html' });
       const blobUrl = URL.createObjectURL(blob);
       
       // Create a download link
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = 'fixed-index.html';
-      a.textContent = 'Download Fixed HTML';
+      a.textContent = 'Download Fixed Index';
       a.style.display = 'none';
       
-      // Trigger the download
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      setTimeout(() => {
-        URL.revokeObjectURL(blobUrl);
-        document.body.removeChild(a);
-      }, 100);
+      // Only append to document.body if it exists
+      if (document.body) {
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          document.body.removeChild(a);
+        }, 100);
+      } else {
+        // If document.body is not available yet, wait for DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+          document.body.appendChild(a);
+          a.click();
+          
+          // Clean up
+          setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+            document.body.removeChild(a);
+          }, 100);
+        });
+      }
     })
     .catch(error => {
       console.error('Error creating fixed HTML:', error);
@@ -327,15 +446,29 @@ function createRestartScript() {
   a.textContent = 'Download Fixed Starter';
   a.style.display = 'none';
   
-  // Trigger the download
-  document.body.appendChild(a);
-  a.click();
-  
-  // Clean up
-  setTimeout(() => {
-    URL.revokeObjectURL(blobUrl);
-    document.body.removeChild(a);
-  }, 100);
+  // Only append to document.body if it exists
+  if (document.body) {
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    }, 100);
+  } else {
+    // If document.body is not available yet, wait for DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+      }, 100);
+    });
+  }
 }
 
 // Add error event listener to catch and handle module loading errors
@@ -385,5 +518,196 @@ window.fixedModules = {
       raciMatrix: typeof window.raciMatrix === 'object' ? 
         (window.raciMatrix === raciMatrixFallback ? 'using fallback' : 'loaded') : 'undefined'
     };
+  }
+};
+
+// Fix missing modules by adding basic stubs
+function fixMissingModules() {
+  console.log('Applying module fixes...');
+
+  // Fix config
+  if (!checkModuleLoaded('config', 'config')) {
+    console.log('Adding minimal config module...');
+    window.config = {
+      init: function() {
+        console.log('Minimal config.init() called');
+        return Promise.resolve();
+      },
+      settings: {
+        app: {
+          name: 'Quality Re-Org & Capability Management Platform',
+          version: '1.0.0'
+        },
+        ui: {
+          theme: 'light',
+          animations: true
+        },
+        features: {
+          firebase: true,
+          localStorage: true
+        }
+      },
+      getConfig: function(key) {
+        // Simple nested property getter
+        return key.split('.').reduce((o, i) => o ? o[i] : undefined, this.settings);
+      }
+    };
+  }
+
+  // Fix UI
+  if (!checkModuleLoaded('ui', 'ui')) {
+    console.log('Adding minimal ui module...');
+    window.ui = {
+      init: function() {
+        console.log('Minimal ui.init() called');
+        
+        // Set up basic tab navigation
+        setTimeout(() => {
+          const tabLinks = document.querySelectorAll('[data-tab]');
+          tabLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              const tabId = link.getAttribute('data-tab');
+              this.switchTab(tabId);
+            });
+          });
+          
+          // Default to dashboard tab
+          this.switchTab('dashboard');
+        }, 100);
+        
+        return Promise.resolve();
+      },
+      switchTab: function(tabId) {
+        console.log(`Switching to tab: ${tabId}`);
+        
+        // Update active tab in navigation
+        document.querySelectorAll('#main-nav a').forEach(el => {
+          el.classList.remove('active');
+        });
+        
+        const activeTab = document.querySelector(`#main-nav a[data-tab="${tabId}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        
+        // Update app state
+        if (window.appData && window.appData.state) {
+          window.appData.state.currentTab = tabId;
+        }
+        
+        // Update tab content
+        switch (tabId) {
+          // Add basic tab implementations here
+          default:
+            // Find or create tab content element
+            let tabContent = document.getElementById('tab-content');
+            if (!tabContent) {
+              tabContent = document.createElement('div');
+              tabContent.id = 'tab-content';
+              document.querySelector('.main-content').appendChild(tabContent);
+            }
+            
+            tabContent.innerHTML = `
+              <div id="${tabId}-tab-content">
+                <h2>${tabId.charAt(0).toUpperCase() + tabId.slice(1)}</h2>
+                <p>This module is loading...</p>
+              </div>
+            `;
+        }
+      },
+      refreshAllTabs: function() {
+        console.log('Refreshing all tabs');
+        
+        // Get current tab
+        if (window.appData && window.appData.state && window.appData.state.currentTab) {
+          this.switchTab(window.appData.state.currentTab);
+        } else {
+          this.switchTab('dashboard');
+        }
+      }
+    };
+  }
+
+  // Fix orgChart
+  if (!window.orgChart) {
+    console.log('Adding minimal orgChart module...');
+    window.orgChart = {
+      init: function() {
+        console.log('Minimal orgChart.init() called');
+        return Promise.resolve();
+      },
+      render: function(containerId) {
+        console.log(`orgChart.render(${containerId}) called`);
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.innerHTML = `
+            <div style="padding: 15px; background-color: #f8f9fa; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+              <h3 style="color: #856404; margin-top: 0;">Organization Chart</h3>
+              <p>The organization chart module is running in recovery mode.</p>
+            </div>
+          `;
+        }
+      }
+    };
+  }
+
+  // Fix raciMatrix
+  if (!window.raciMatrix) {
+    console.log('Adding minimal raciMatrix module...');
+    window.raciMatrix = {
+      init: function() {
+        console.log('Minimal raciMatrix.init() called');
+        return Promise.resolve();
+      },
+      render: function(containerId) {
+        console.log(`raciMatrix.render(${containerId}) called`);
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.innerHTML = `
+            <div style="padding: 15px; background-color: #f8f9fa; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+              <h3 style="color: #856404; margin-top: 0;">RACI Matrix</h3>
+              <p>The RACI matrix module is running in recovery mode.</p>
+            </div>
+          `;
+        }
+      }
+    };
+  }
+
+  console.log('Module fixes applied');
+}
+
+// Expose module fix functions globally
+window.moduleFixes = {
+  fixMissingModules: fixMissingModules,
+  enhanceErrorHandling: enhanceErrorHandling,
+  fixPathCasing: fixPathCasing,
+  checkDependencies: function() {
+    console.log('Checking module dependencies...');
+    return {
+      config: checkModuleLoaded('config', 'config'),
+      ui: checkModuleLoaded('ui', 'ui'),
+      orgChart: checkModuleLoaded('orgChart', 'orgChart'),
+      raciMatrix: checkModuleLoaded('raciMatrix', 'raciMatrix')
+    };
+  },
+  diagnose: function() {
+    console.log('Running module diagnostics...');
+    const moduleStatus = {};
+    
+    // Check core modules
+    moduleStatus.config = window.config ? 'loaded' : 'missing';
+    moduleStatus.ui = window.ui ? 'loaded' : 'missing';
+    moduleStatus.orgChart = window.orgChart ? 'loaded' : 'missing';
+    moduleStatus.raciMatrix = window.raciMatrix ? 'loaded' : 'missing';
+    
+    // Check if using fallbacks
+    if (moduleStatus.config === 'loaded' && window.config.getConfig && window.config.getConfig.toString().includes('Minimal config')) {
+      moduleStatus.config = 'using fallback';
+    }
+    if (moduleStatus.ui === 'loaded' && window.ui.init && window.ui.init.toString().includes('Minimal ui')) {
+      moduleStatus.ui = 'using fallback';
+    }
+    
+    return moduleStatus;
   }
 }; 

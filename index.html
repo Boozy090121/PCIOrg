@@ -22,13 +22,24 @@
   <link rel="stylesheet" href="src/css/firebase-ui.css" />
   <link rel="stylesheet" href="src/css/styles.css" />
   
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <!-- Firebase SDK (Optional) - Will degrade gracefully if not available -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" onerror="console.warn('Firebase App SDK failed to load, will use mock implementation')"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" onerror="console.warn('Firebase Firestore SDK failed to load, will use mock implementation')"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" onerror="console.warn('Firebase Auth SDK failed to load, will use mock implementation')"></script>
   
   <!-- Module Fix Script - Loads before main.js to catch and fix module loading issues -->
-  <script src="fix-modules.js"></script>
+  <script src="fixed-modules.js"></script>
+  
+  <!-- Firebase and Data Services -->
+  <script src="js/firebaseService.js"></script>
+  <script src="js/firebaseDataService.js"></script>
+  <script src="js/dataService.js"></script>
+  
+  <!-- Simplified UI module -->
+  <script src="js/modules/ui-simple.js"></script>
+  
+  <!-- Bootstrap and initialization -->
+  <script src="src/js/bootstrap.js"></script>
   
   <!-- Base styles for fallback and recovery screens -->
   <style>
@@ -164,7 +175,7 @@
     }
     
     /* Focus factory buttons */
-    .focus-factory-buttons {
+    .factory-buttons {
       display: flex;
       gap: 5px;
       margin-top: 5px;
@@ -590,505 +601,188 @@
       margin-top: 0;
       color: #856404;
     }
+
+    /* Firebase status section */
+    .firebase-status-section {
+      margin-top: auto;
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-light);
+    }
+    
+    .sidebar-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #495057;
+    }
+    
+    .firebase-status-indicator {
+      margin-bottom: 10px;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .status-badge.connected {
+      background-color: #28a745;
+    }
+    
+    .status-badge.disconnected {
+      background-color: #dc3545;
+    }
+    
+    .firebase-control-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .firebase-control-btn {
+      width: 100%;
+      padding: 6px 10px;
+      text-align: left;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-color);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 0.85rem;
+    }
+    
+    .firebase-control-btn:hover {
+      background-color: #e9ecef;
+    }
+    
+    .firebase-control-btn i {
+      margin-right: 5px;
+    }
+    
+    /* Firebase test result */
+    .firebase-test-result {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      max-width: 90%;
+      width: 500px;
+    }
+    
+    .firebase-test-result h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .test-status {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .test-details {
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #495057;
+    }
   </style>
-  
-  <!-- Safety timeout to force hide loader -->
-  <script>
-    // Add loading class to body initially
-    document.body.classList.add('loading');
-    document.documentElement.setAttribute('data-value-stream', 'bbv'); // Default to BBV
-    
-    // Force hide loader after 8 seconds no matter what
-    setTimeout(function() {
-      var loader = document.getElementById('initialLoader');
-      if (loader && loader.style.display !== 'none') {
-        console.warn('Safety timeout: Forcing loader to hide');
-        loader.style.display = 'none';
-        
-        // Remove loading class from body
-        document.body.classList.remove('loading');
-        
-        // Show minimal emergency UI if needed
-        var emergencyDiv = document.createElement('div');
-        emergencyDiv.style.padding = '20px';
-        emergencyDiv.style.backgroundColor = '#f8f9fa';
-        emergencyDiv.style.border = '1px solid #dee2e6';
-        emergencyDiv.style.borderRadius = '4px';
-        emergencyDiv.style.margin = '20px';
-        
-        emergencyDiv.innerHTML = `
-          <h3 style="color: #dc3545; margin-bottom: 10px;">Loading timeout occurred</h3>
-          <p>The application is taking longer than expected to load.</p>
-          <p>You can:</p>
-          <button onclick="window.location.reload()" style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">Reload the page</button>
-          <button onclick="window.location.reload(true)" style="background-color: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 10px 0 0 10px;">Force reload (clear cache)</button>
-        `;
-        
-        document.body.appendChild(emergencyDiv);
-      }
-    }, 8000);
-    
-    // Initialize basic objects to prevent recovery mode
-    window.app = window.app || {};
-    window.data = window.data || {};
-    window.config = window.config || {
-      colors: {
-        bbv: '#00518A',
-        add: '#CC2030',
-        arb: '#4F46E5'
-      }
-    };
-    window.ui = window.ui || {};
-    
-    // Add debugging listeners
-    window.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM content loaded');
-    });
-    
-    // Global error handler
-    window.addEventListener('error', function(event) {
-      console.error('Global error:', event.error);
-      const errorDetails = document.getElementById('errorDetails');
-      if (errorDetails) {
-        errorDetails.textContent = event.error.message || 'Unknown error';
-        errorDetails.style.display = 'block';
-      }
-    });
-  </script>
 </head>
-<body class="loading stream-bbv">
-  <!-- Hide all modals on page load -->
-  <script>
-    // Ensure all modals are hidden on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Hide any modals that might be showing
-      document.querySelectorAll('.modal').forEach(function(modal) {
-        modal.classList.remove('active');
-      });
-    });
-  </script>
-  
-  <!-- Loading screen -->
-  <div id="initialLoader" class="initial-loader">
+<body class="loading">
+  <!-- Initial loader -->
+  <div class="initial-loader">
     <div class="loader-spinner"></div>
-    <p>Loading Quality Re-Org & Capability Management Tool...</p>
-    <p id="loadingStatus" style="font-size: 0.8em; color: #6c757d; margin-top: 5px;">Initializing...</p>
-    <div id="errorDetails" style="color: red; margin-top: 10px; display: none;"></div>
+    <h2>Quality Re-Org Platform</h2>
+    <p>Loading application...</p>
   </div>
-
-  <!-- Error dialog -->
-  <div class="error-dialog" style="display: none;">
-    <div class="error-content">
-      <h3>Error</h3>
-      <p class="error-message"></p>
-      <button onclick="this.parentElement.parentElement.style.display='none'">Close</button>
-    </div>
-  </div>
-
-  <!-- Main app structure -->
-  <div class="app-container">
-    <!-- Sidebar navigation -->
-    <nav class="sidebar">
+  
+  <!-- Main app container -->
+  <div class="app-container" data-value-stream="bbv">
+    <!-- Sidebar -->
+    <div class="sidebar">
       <div class="sidebar-header">
-        <h1>Quality Re-Org Tool</h1>
-        <!-- Firebase status indicator -->
-        <div id="firebase-status" class="firebase-status">
-          <i class="fas fa-circle"></i> <span class="status-text">Initializing...</span>
-        </div>
+        <h1>Quality Re-Org Platform</h1>
       </div>
       
-      <!-- Value stream selector -->
       <div class="value-stream-selector">
-        <label for="value-stream">Focus Factory:</label>
-        <div class="focus-factory-buttons">
-          <button id="factory-bbv" class="factory-btn active" data-value="bbv">BBV</button>
-          <button id="factory-add" class="factory-btn" data-value="add">ADD</button>
-          <button id="factory-arb" class="factory-btn" data-value="arb">ARB</button>
+        <label>Focus Factory</label>
+        <div class="factory-buttons">
+          <button id="factory-bbv" class="factory-btn active" data-value-stream="bbv">BBV</button>
+          <button id="factory-add" class="factory-btn" data-value-stream="add">ADD</button>
+          <button id="factory-arb" class="factory-btn" data-value-stream="arb">ARB</button>
         </div>
       </div>
-
-      <!-- Navigation tabs -->
-      <div class="sidebar-nav"></div>
-    </nav>
-
-    <!-- Main content area -->
-    <main class="main-content">
-      <!-- Context header -->
-      <header class="context-header">
-        <h2 id="context-title">Dashboard</h2>
-      </header>
-
-      <!-- Tab content -->
-      <div id="tabContent" class="tab-content"></div>
-    </main>
-  </div>
-
-  <!-- Inline mock data for use without a server -->
-  <script>
-    // Mock data for teams
-    window.mockData = {
-      teams: [
-        {
-          id: 1,
-          name: 'BBV Quality Team',
-          stream: 'bbv',
-          description: 'Quality team supporting BBV product line',
-          responsibilities: 'Manage quality assurance processes, perform audits, handle documentation',
-          performance: 75,
-          personnel: [
-            { id: 1, name: 'John Smith', role: 'Quality Account Manager', client: 'Client 1' },
-            { id: 2, name: 'Jane Doe', role: 'Quality Engineer', client: 'Client 1' },
-            { id: 3, name: 'Michael Brown', role: 'Quality Coordinator', client: 'Client 2' }
-          ]
-        },
-        {
-          id: 2,
-          name: 'ADD Quality Team',
-          stream: 'add',
-          description: 'Quality team supporting ADD product line',
-          responsibilities: 'Handle documentation, support audits, manage CAPAs',
-          performance: 82,
-          personnel: [
-            { id: 4, name: 'Sarah Johnson', role: 'Quality Account Manager', client: 'Client 3' },
-            { id: 5, name: 'Robert Williams', role: 'Document Control Specialist', client: 'Client 3' }
-          ]
-        },
-        {
-          id: 3,
-          name: 'ARB Quality Team',
-          stream: 'arb',
-          description: 'Quality team supporting ARB product line',
-          responsibilities: 'Quality oversight, compliance management, audit support',
-          performance: 90,
-          personnel: [
-            { id: 6, name: 'Emily Davis', role: 'Quality Lead', client: 'Client 4' },
-            { id: 7, name: 'James Wilson', role: 'Quality Specialist', client: 'Client 5' }
-          ]
-        }
-      ],
-      personnel: [
-        { id: 1, name: 'John Smith', role: 'Quality Account Manager', stream: 'bbv', skills: ['Quality Systems', 'Auditing', 'Documentation'] },
-        { id: 2, name: 'Jane Doe', role: 'Quality Engineer', stream: 'bbv', skills: ['Process Validation', 'Root Cause Analysis', 'CAPA'] },
-        { id: 3, name: 'Michael Brown', role: 'Quality Coordinator', stream: 'bbv', skills: ['Documentation', 'Change Control', 'Training'] },
-        { id: 4, name: 'Sarah Johnson', role: 'Quality Account Manager', stream: 'add', skills: ['Quality Systems', 'Regulatory Compliance', 'Risk Assessment'] },
-        { id: 5, name: 'Robert Williams', role: 'Document Control Specialist', stream: 'add', skills: ['Document Management', 'SOP Writing', 'Training'] },
-        { id: 6, name: 'Emily Davis', role: 'Quality Lead', stream: 'arb', skills: ['Quality Oversight', 'Audit Management', 'Regulatory Affairs'] },
-        { id: 7, name: 'James Wilson', role: 'Quality Specialist', stream: 'arb', skills: ['GMP Compliance', 'Deviation Management', 'Quality Risk Management'] },
-        { id: 8, name: 'Lisa Thompson', role: 'Quality Engineer', stream: 'shared', skills: ['Validation', 'Equipment Qualification', 'Computer System Validation'] }
-      ]
-    };
-    
-    // Add mock API endpoint functions
-    window.api = {
-      getTeams: function() {
-        return Promise.resolve({ teams: window.mockData.teams });
-      },
-      getPersonnel: function() {
-        return Promise.resolve({ personnel: window.mockData.personnel });
-      }
-    };
-  </script>
-
-  <!-- Loading status updater -->
-  <script>
-    // Update loading status periodically
-    let loadingStep = 0;
-    const loadingSteps = [
-      'Initializing...',
-      'Loading components...',
-      'Preparing UI...',
-      'Fetching data...'
-    ];
-    
-    const updateLoadingStatus = () => {
-      const statusElement = document.getElementById('loadingStatus');
-      if (statusElement) {
-        statusElement.textContent = loadingSteps[loadingStep % loadingSteps.length];
-        loadingStep++;
-      }
-    };
-    
-    // Update loading status every 800ms
-    const loadingInterval = setInterval(updateLoadingStatus, 800);
-    
-    // Stop updating after 8 seconds (failsafe)
-    setTimeout(() => {
-      clearInterval(loadingInterval);
-    }, 8000);
-    
-    // Stop when page is loaded
-    window.addEventListener('load', () => {
-      clearInterval(loadingInterval);
-    });
-    
-    // Helper function to load scripts
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error(`Failed to load ${src}`));
-        document.body.appendChild(script);
-        
-        // Set a timeout for script loading to prevent hanging
-        const timeout = setTimeout(() => {
-          reject(new Error(`Timeout loading ${src}`));
-        }, 5000);
-        
-        // Clear timeout on success
-        script.onload = () => {
-          clearTimeout(timeout);
-          resolve();
-        };
-      });
-    }
-  </script>
-
-  <!-- Core JS files -->
-  <script src="js/main.js"></script>
-  <script src="js/core/config.js"></script>
-  <script src="js/core/dataService.js"></script>
-  <script src="js/core/data.js"></script>
-  <script src="js/core/app.js"></script>
-  
-  <!-- Module JS files -->
-  <script src="js/modules/ui.js"></script>
-  <script src="js/modules/orgchart.js"></script>
-  <script src="js/modules/racimatrix.js"></script>
-  
-  <!-- Main initialization -->
-  <script>
-    // Initialize the application when all scripts are loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      // Check if all required scripts are loaded
-      const requiredObjects = ['config', 'ui', 'orgChart', 'raciMatrix'];
-      const missingObjects = requiredObjects.filter(obj => !window[obj]);
       
-      if (missingObjects.length > 0) {
-        console.error(`Missing required objects: ${missingObjects.join(', ')}`);
-        
-        // Show error in loader
-        const errorDetails = document.getElementById('errorDetails');
-        if (errorDetails) {
-          errorDetails.textContent = `Failed to load required modules: ${missingObjects.join(', ')}`;
-          errorDetails.style.display = 'block';
-        }
-        
-        return;
-      }
-      
-      // Initialize UI
-      if (window.ui && typeof window.ui.init === 'function') {
-        window.ui.init().then(() => {
-          console.log('Application initialized successfully');
-          
-          // Hide the loader
-          const loader = document.getElementById('initialLoader');
-          if (loader) {
-            loader.style.display = 'none';
-          }
-          
-          // Remove loading class from body
-          document.body.classList.remove('loading');
-        }).catch(error => {
-          console.error('Failed to initialize UI:', error);
-          
-          // Show error in loader
-          const errorDetails = document.getElementById('errorDetails');
-          if (errorDetails) {
-            errorDetails.textContent = `Failed to initialize UI: ${error.message}`;
-            errorDetails.style.display = 'block';
-          }
-        });
-      } else {
-        console.error('UI module not found or init method not available');
-        
-        // Show error in loader
-        const errorDetails = document.getElementById('errorDetails');
-        if (errorDetails) {
-          errorDetails.textContent = 'UI module not found or init method not available';
-          errorDetails.style.display = 'block';
-        }
-      }
-    });
-  </script>
-
-  <!-- Add a null check for classList references around line 354 -->
-  <script>
-    function initTabs() {
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      if (!tabBtns || tabBtns.length === 0) return;
-      
-      // Set initial tab based on URL hash or localStorage
-      let activeTab = window.location.hash.substring(1) || localStorage.getItem('activeTab') || 'dashboard';
-      
-      // Ensure the tab exists, fallback to dashboard if not
-      const tabExists = Array.from(tabBtns).some(btn => btn.getAttribute('data-tab') === activeTab);
-      if (!tabExists) {
-        activeTab = 'dashboard';
-      }
-      
-      // Activate the tab
-      tabBtns.forEach(btn => {
-        const tabId = btn.getAttribute('data-tab');
-        const tabContent = document.getElementById(tabId);
-        
-        // Add null checks for both the button and tab content
-        if (btn && btn.classList && tabContent) {
-          if (tabId === activeTab) {
-            btn.classList.add('active');
-            tabContent.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-            tabContent.classList.remove('active');
-          }
-        }
-        
-        // Add click event
-        btn.addEventListener('click', function() {
-          const clickedTabId = this.getAttribute('data-tab');
-          
-          // Update active classes with null checks
-          tabBtns.forEach(b => {
-            if (b && b.classList) {
-              b.classList.remove('active');
-            }
-          });
-          
-          if (this && this.classList) {
-            this.classList.add('active');
-          }
-          
-          // Update tab content visibility with null checks
-          document.querySelectorAll('.tab-content').forEach(content => {
-            if (content && content.classList) {
-              content.classList.remove('active');
-            }
-          });
-          
-          const activeContent = document.getElementById(clickedTabId);
-          if (activeContent && activeContent.classList) {
-            activeContent.classList.add('active');
-          }
-          
-          // Save active tab to localStorage and update URL hash
-          localStorage.setItem('activeTab', clickedTabId);
-          window.location.hash = clickedTabId;
-        });
-      });
-    }
-  </script>
-
-  <!-- Emergency script to fix navigation visibility issues -->
-  <script>
-    // Force fix for navigation visibility after everything else has loaded
-    window.addEventListener('load', function() {
-      // Ensure navigation items are visible
-      setTimeout(function() {
-        const navItems = document.querySelectorAll('.nav-item');
-        if (navItems.length === 0) {
-          console.error('Navigation items not found, attempting to recreate them');
-          
-          // Try to recreate the navigation if it's missing
-          if (window.ui && typeof window.ui.setupTabs === 'function') {
-            window.ui.setupTabs();
-          }
-          
-          // If we still don't have nav items, create them manually
-          if (document.querySelectorAll('.nav-item').length === 0) {
-            const sidebarNav = document.querySelector('.sidebar-nav');
-            if (sidebarNav) {
-              const tabs = [
-                { id: 'dashboard', icon: 'fa-tachometer-alt', title: 'Dashboard' },
-                { id: 'personnel', icon: 'fa-users', title: 'Personnel' },
-                { id: 'teamBuilder', icon: 'fa-user-friends', title: 'Team Builder' },
-                { id: 'clientFactory', icon: 'fa-building', title: 'Clients & Factories' },
-                { id: 'sharedResources', icon: 'fa-people-arrows', title: 'Shared Resources' },
-                { id: 'racimatrix', icon: 'fa-table', title: 'RACI Matrix' },
-                { id: 'skillsmatrix', icon: 'fa-chart-bar', title: 'Skills Matrix' },
-                { id: 'gapanalysis', icon: 'fa-search', title: 'Gap Analysis' },
-                { id: 'planning', icon: 'fa-calendar-alt', title: 'Planning' },
-                { id: 'analytics', icon: 'fa-chart-line', title: 'Analytics' }
-              ];
-              
-              const tabsHtml = tabs.map(tab => `
-                <a href="#" class="nav-item" data-tab="${tab.id}">
-                  <i class="fas ${tab.icon}"></i>
-                  <span>${tab.title}</span>
-                </a>
-              `).join('');
-              
-              sidebarNav.innerHTML = tabsHtml;
-              
-              // Add click events to the manually created tabs
-              document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                  e.preventDefault();
-                  const tabId = this.getAttribute('data-tab');
-                  if (window.ui && typeof window.ui.switchTab === 'function') {
-                    window.ui.switchTab(tabId);
-                  }
-                });
-              });
-              
-              console.log('Navigation items created manually');
-            }
-          }
-        }
-        
-        // Ensure focus factory buttons work
-        const factoryButtons = document.querySelectorAll('.factory-btn');
-        factoryButtons.forEach(btn => {
-          btn.addEventListener('click', function() {
-            // Remove active class from all buttons
-            factoryButtons.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Get the value stream and update app state
-            const valueStream = this.getAttribute('data-value');
-            if (window.appData && window.appData.state) {
-              window.appData.state.valueStream = valueStream;
-            }
-            
-            // Update styling
-            document.documentElement.setAttribute('data-value-stream', valueStream);
-            document.body.className = document.body.className.replace(/stream-\w+/g, '');
-            document.body.classList.add(`stream-${valueStream}`);
-            
-            // Refresh the current tab if ui is available
-            if (window.ui && typeof window.ui.switchTab === 'function' && window.appData) {
-              const currentTab = window.appData.state.currentTab || 'dashboard';
-              window.ui.switchTab(currentTab);
-            }
-          });
-        });
-        
-      }, 1000); // Give the app a second to initialize properly
-    });
-  </script>
-
-  <!-- Firebase UI component -->
-  <template id="firebase-ui-template">
-    <div class="firebase-ui-container">
-      <div class="firebase-controls">
-        <h4>Data Storage Controls</h4>
-        <div class="button-group">
-          <button id="btn-sync-to-firebase" class="btn btn-primary">
-            <i class="fas fa-cloud-upload-alt"></i> Sync to Cloud
-          </button>
-          <button id="btn-load-from-firebase" class="btn btn-secondary">
-            <i class="fas fa-cloud-download-alt"></i> Load from Cloud
-          </button>
-          <button id="btn-reset-firebase" class="btn btn-danger">
-            <i class="fas fa-trash-alt"></i> Reset Cloud Data
-          </button>
-        </div>
-        <div class="sync-status"></div>
+      <div class="sidebar-nav" id="main-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </button>
+        <button class="nav-item" data-tab="personnel">
+          <i class="fas fa-users"></i> Personnel
+        </button>
+        <button class="nav-item" data-tab="teams">
+          <i class="fas fa-user-friends"></i> Teams
+        </button>
+        <button class="nav-item" data-tab="orgchart">
+          <i class="fas fa-sitemap"></i> Org Chart
+        </button>
+        <button class="nav-item" data-tab="skilltree">
+          <i class="fas fa-project-diagram"></i> Skill Tree
+        </button>
+        <button class="nav-item" data-tab="skillsmatrix">
+          <i class="fas fa-table"></i> Skills Matrix
+        </button>
+        <button class="nav-item" data-tab="racimatrix">
+          <i class="fas fa-list-alt"></i> RACI Matrix
+        </button>
+        <button class="nav-item" data-tab="planning">
+          <i class="fas fa-calendar-alt"></i> Planning
+        </button>
+        <button class="nav-item" data-tab="resources">
+          <i class="fas fa-box"></i> Resources
+        </button>
+        <button class="nav-item" data-tab="analytics">
+          <i class="fas fa-chart-line"></i> Analytics
+        </button>
+        <button class="nav-item" data-tab="documentation">
+          <i class="fas fa-book"></i> Documentation
+        </button>
       </div>
     </div>
-  </template>
+    
+    <!-- Main content area -->
+    <div class="main-content">
+      <div id="tabContent" class="tab-content">
+        <!-- Tab content will be loaded here -->
+        <div class="loading-placeholder">
+          <p>Loading content...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main JS file - will initialize the app -->
+  <script src="js/main.js"></script>
+  
+  <script>
+    // Initialize app manually if needed
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize UI directly if not already done by main.js
+      if (window.ui && typeof window.ui.init === 'function' && !window.ui.initialized) {
+        window.ui.init();
+      }
+    });
+  </script>
 </body>
 </html>
 
